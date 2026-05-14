@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Buddy Game</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --success: #47D16E;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f8ff;
+            transition: background 0.5s;
+        }
+        #game-container {
+            text-align: center;
+            background: white;
+            padding: 2rem;
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 400px;
+        }
+        .level-btns { margin-bottom: 20px; }
+        .level-btns button {
+            padding: 8px 12px;
+            margin: 5px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background: #eee;
+        }
+        .level-btns button.active {
+            background: var(--primary);
+            color: white;
+        }
+        #word-display {
+            font-size: 5rem;
+            font-weight: bold;
+            color: #333;
+            margin: 10px 0;
+        }
+        #translation-display {
+            font-size: 2rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .main-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 20px;
+            border-radius: 50%;
+            font-size: 2rem;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+            margin-bottom: 20px;
+        }
+        .next-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #score-board {
+            font-weight: bold;
+            color: var(--primary);
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="level-btns" id="levelContainer">
+        <button onclick="setLevel(1)" id="btn1" class="active">Level 1 (2L)</button>
+        <button onclick="setLevel(2)" id="btn2">Level 2 (3L)</button>
+        <button onclick="setLevel(3)" id="btn3">Level 3 (4L)</button>
+    </div>
+
+    <div id="word-display">CAT</div>
+    <div id="translation-display">貓</div>
+
+    <button class="main-btn" onclick="speak()">🔊</button>
+    
+    <button class="next-btn" onclick="nextWord()">Next Word / 下一個</button>
+
+    <div id="score-board">Words Learned: <span id="score">0</span></div>
+</div>
+
+<script>
+    const allWords = [
+        {en: "Go", zh: "去", lv: 1}, {en: "Up", zh: "上", lv: 1}, {en: "In", zh: "在", lv: 1},
+        {en: "Cat", zh: "貓", lv: 2}, {en: "Dog", zh: "狗", lv: 2}, {en: "Sun", zh: "太陽", lv: 2},
+        {en: "Book", zh: "書", lv: 3}, {en: "Fish", zh: "魚", lv: 3}, {en: "Tree", zh: "樹", lv: 3}
+        // Add all your 150+ words here following the same format!
+    ];
+
+    let currentLevel = 1;
+    let filtered = [];
+    let currentIdx = 0;
+    let score = 0;
+
+    function setLevel(lv) {
+        currentLevel = lv;
+        document.querySelectorAll('.level-btns button').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn' + lv).classList.add('active');
+        filterAndStart();
+    }
+
+    function filterAndStart() {
+        filtered = allWords.filter(w => w.lv === currentLevel);
+        nextWord(false); // Get first word without increasing score
+    }
+
+    function nextWord(increaseScore = true) {
+        if(increaseScore) {
+            score++;
+            document.getElementById('score').innerText = score;
+            document.body.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 90%)`;
+        }
+        currentIdx = Math.floor(Math.random() * filtered.length);
+        document.getElementById('word-display').innerText = filtered[currentIdx].en;
+        document.getElementById('translation-display').innerText = filtered[currentIdx].zh;
+    }
+
+    function speak() {
+        const text = filtered[currentIdx].en;
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'en-US';
+        msg.rate = 0.8;
+        window.speechSynthesis.speak(msg);
+    }
+
+    // Initialize
+    filterAndStart();
+</script>
+
+</body>
+</html>
