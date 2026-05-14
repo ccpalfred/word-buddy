@@ -102,11 +102,25 @@
 </div>
 
 <script>
-    const allWords = [
-        {en: "Go", zh: "去", lv: 1}, {en: "Up", zh: "上", lv: 1}, {en: "In", zh: "在", lv: 1},
+const allWords = [
+        // LEVEL 1 (2 Letters)
+        {en: "Go", zh: "去", lv: 1}, {en: "Up", zh: "上", lv: 1}, {en: "To", zh: "到", lv: 1}, 
+        {en: "In", zh: "在", lv: 1}, {en: "Me", "zh": "我", lv: 1}, {en: "My", "zh": "我的", lv: 1},
+        {en: "He", "zh": "他", lv: 1}, {en: "We", "zh": "我們", lv: 1}, {en: "No", "zh": "不", lv: 1},
+        {en: "On", "zh": "在上面", lv: 1}, {en: "At", "zh": "在", lv: 1}, {en: "Is", "zh": "是", lv: 1},
+        
+        // LEVEL 2 (3 Letters)
         {en: "Cat", zh: "貓", lv: 2}, {en: "Dog", zh: "狗", lv: 2}, {en: "Sun", zh: "太陽", lv: 2},
-        {en: "Book", zh: "書", lv: 3}, {en: "Fish", zh: "魚", lv: 3}, {en: "Tree", zh: "樹", lv: 3}
-        // Add all your 150+ words here following the same format!
+        {en: "Pig", zh: "豬", lv: 2}, {en: "Box", zh: "盒子", lv: 2}, {en: "Sky", zh: "天空", lv: 2},
+        {en: "Red", zh: "紅色", lv: 2}, {en: "Boy", zh: "男孩", lv: 2}, {en: "Egg", zh: "雞蛋", lv: 2},
+        {en: "Bus", zh: "巴士", lv: 2}, {en: "Car", zh: "汽車", lv: 2}, {en: "Ant", zh: "螞蟻", lv: 2},
+        
+        // LEVEL 3 (4 Letters)
+        {en: "Book", zh: "書", lv: 3}, {en: "Fish", zh: "魚", lv: 3}, {en: "Tree", zh: "樹", lv: 3},
+        {en: "Ball", zh: "球", lv: 3}, {en: "Cake", zh: "蛋糕", lv: 3}, {en: "Duck", zh: "鴨子", lv: 3},
+        {en: "Star", zh: "星星", lv: 3}, {en: "Milk", zh: "牛奶", lv: 3}, {en: "Frog", zh: "青蛙", lv: 3},
+        {en: "Bird", zh: "小鳥", lv: 3}, {en: "Moon", zh: "月亮", lv: 3}, {en: "Lion", zh: "獅子", lv: 3}
+        // ... You can continue adding pairs here until you hit 150!
     ];
 
     let currentLevel = 1;
