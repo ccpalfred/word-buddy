@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word Buddy 1000</title>
+    <title>Word Buddy Learning Game</title>
     <style>
         :root {
             --primary: #4A90E2;
             --success: #47D16E;
             --bg: #f0f8ff;
+            --level0: #FF9F43;
         }
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -28,7 +29,7 @@
             border-radius: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             width: 95%;
-            max-width: 450px;
+            max-width: 480px;
         }
         .search-box {
             width: 100%;
@@ -38,36 +39,54 @@
             margin-bottom: 15px;
             box-sizing: border-box;
             font-size: 1rem;
+            outline: none;
         }
-        .level-btns { margin-bottom: 15px; display: flex; justify-content: center; gap: 5px; }
+        .search-box:focus { border-color: var(--primary); }
+        
+        .level-btns { 
+            margin-bottom: 15px; 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 8px; 
+        }
         .level-btns button {
-            padding: 8px 10px;
+            padding: 10px;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
             background: #eee;
             font-weight: bold;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
+            transition: 0.2s;
         }
         .level-btns button.active { background: var(--primary); color: white; }
+        .level-btns button#btn0.active { background: var(--level0); }
         
         #word-display {
-            font-size: 4.5rem;
+            font-size: 5rem;
             font-weight: bold;
             color: #333;
-            margin: 5px 0;
-            text-transform: capitalize;
+            margin: 10px 0;
+            text-transform: lowercase; /* Phonics/early learning usually uses lowercase */
         }
+        .capitalized { text-transform: capitalize !important; }
+        
         #translation-display {
             font-size: 2.2rem;
             color: #666;
             margin-bottom: 15px;
+            min-height: 1.2em;
         }
         .controls {
             margin: 15px 0;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 15px;
             font-size: 0.9rem;
-            color: #888;
+            color: #555;
         }
+        input[type=range] { width: 80%; vertical-align: middle; }
+
         .main-btn {
             background: var(--primary);
             color: white;
@@ -77,70 +96,98 @@
             font-size: 2.5rem;
             cursor: pointer;
             box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
-            margin-bottom: 15px;
-            width: 100px;
-            height: 100px;
+            margin-bottom: 20px;
+            width: 110px;
+            height: 110px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            transition: transform 0.1s;
         }
+        .main-btn:active { transform: scale(0.9); }
+        
         .next-btn {
             background: var(--success);
             color: white;
             border: none;
             width: 100%;
-            padding: 18px;
+            padding: 20px;
             border-radius: 20px;
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             font-weight: bold;
             cursor: pointer;
+            box-shadow: 0 4px 0 #38a859;
         }
+        .next-btn:active { transform: translateY(4px); box-shadow: none; }
+
         #score-board {
             font-weight: bold;
             color: var(--primary);
-            margin-top: 15px;
+            margin-top: 20px;
+            font-size: 1.1rem;
         }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <input type="text" id="searchBar" class="search-box" placeholder="🔍 Search for a word..." onkeyup="searchWord()">
+    <input type="text" id="searchBar" class="search-box" placeholder="🔍 搜尋單字 Search Word..." onkeyup="searchWord()">
 
     <div class="level-btns">
-        <button onclick="setLevel(1)" id="btn1" class="active">Level 1 (2L)</button>
-        <button onclick="setLevel(2)" id="btn2">Level 2 (3L)</button>
-        <button onclick="setLevel(3)" id="btn3">Level 3 (4L)</button>
+        <button onclick="setLevel(0)" id="btn0" class="active">Level 0 (Phonics)</button>
+        <button onclick="setLevel(1)" id="btn1">Level 1 (2 Letters)</button>
+        <button onclick="setLevel(2)" id="btn2">Level 2 (3 Letters)</button>
+        <button onclick="setLevel(3)" id="btn3">Level 3 (4 Letters)</button>
     </div>
 
     <div id="word-display">-</div>
     <div id="translation-display">-</div>
 
     <div class="controls">
-        <label>Speech Speed: </label>
-        <input type="range" id="rate" min="0.2" max="1" step="0.1" value="0.6">
+        <label>🐢 語速 Speed: </label>
+        <input type="range" id="rate" min="0.2" max="0.9" step="0.1" value="0.5">
     </div>
 
     <button class="main-btn" onclick="speak()">🔊</button>
     <button class="next-btn" onclick="nextWord(true)">Next Word / 下一個</button>
 
-    <div id="score-board">Words Learned: <span id="score">0</span></div>
+    <div id="score-board">🌟 Words Learned: <span id="score">0</span></div>
 </div>
 
 <script>
     const allWords = [
-        // LEVEL 1 (2 Letters)
-        {en: "Go", zh: "去", lv: 1}, {en: "Up", zh: "上", lv: 1}, {en: "In", zh: "在", lv: 1}, {en: "Me", zh: "我", lv: 1}, {en: "My", zh: "我的", lv: 1}, {en: "He", zh: "他", lv: 1}, {en: "We", zh: "我們", lv: 1}, {en: "No", zh: "不", lv: 1}, {en: "On", zh: "在上面", lv: 1}, {en: "At", zh: "在", lv: 1}, {en: "Is", zh: "是", lv: 1}, {en: "It", zh: "它", lv: 1}, {en: "Am", zh: "是", lv: 1}, {en: "Do", zh: "做", lv: 1}, {en: "Of", zh: "的", lv: 1}, {en: "Hi", zh: "你好", lv: 1},
-        
-        // LEVEL 2 (3 Letters)
-        {en: "Cat", zh: "貓", lv: 2}, {en: "Dog", zh: "狗", lv: 2}, {en: "Sun", zh: "太陽", lv: 2}, {en: "Pig", zh: "豬", lv: 2}, {en: "Sky", zh: "天空", lv: 2}, {en: "Red", zh: "紅色", lv: 2}, {en: "Egg", zh: "雞蛋", lv: 2}, {en: "Car", zh: "汽車", lv: 2}, {en: "Key", zh: "鑰匙", lv: 2}, {en: "Pen", zh: "筆", lv: 2}, {en: "Run", zh: "跑", lv: 2}, {en: "Eat", zh: "吃", lv: 2}, {en: "Fly", zh: "飛", lv: 2}, {en: "Eye", zh: "眼睛", lv: 2}, {en: "Arm", zh: "手臂", lv: 2}, {en: "Leg", zh: "腿", lv: 2}, {en: "Ear", zh: "耳朵", lv: 2}, {en: "Sad", zh: "傷心", lv: 2}, {en: "Mad", zh: "生氣", lv: 2}, {en: "Hot", zh: "熱", lv: 2}, {en: "Wet", zh: "濕", lv: 2},
-        
-        // LEVEL 3 (4 Letters)
-        {en: "Book", zh: "書", lv: 3}, {en: "Fish", zh: "魚", lv: 3}, {en: "Tree", zh: "樹", lv: 3}, {en: "Ball", zh: "球", lv: 3}, {en: "Duck", zh: "鴨子", lv: 3}, {en: "Milk", zh: "牛奶", lv: 3}, {en: "Bird", zh: "小鳥", lv: 3}, {en: "Foot", zh: "腳", lv: 3}, {en: "Hand", zh: "手", lv: 3}, {en: "Nose", zh: "鼻子", lv: 3}, {en: "Face", zh: "臉", lv: 3}, {en: "Glad", zh: "高興", lv: 3}, {en: "Calm", zh: "冷靜", lv: 3}, {en: "Kind", zh: "善良", lv: 3}, {en: "Rain", zh: "下雨", lv: 3}, {en: "Snow", zh: "下雪", lv: 3}, {en: "Mist", zh: "薄霧", lv: 3}, {en: "Wind", zh: "風", lv: 3}, {en: "Cold", zh: "冷", lv: 3}, {en: "Warm", zh: "溫暖", lv: 3}, {en: "Farm", zh: "農場", lv: 3}, {en: "Shop", zh: "商店", lv: 3}, {en: "Park", zh: "公園", lv: 3}
-        // ... You can add more words here!
+        // LEVEL 0: Phonics (44 Sounds)
+        {en: "a", zh: "Apple /æ/", lv: 0}, {en: "b", zh: "Ball /b/", lv: 0}, {en: "c", zh: "Cat /k/", lv: 0}, 
+        {en: "d", zh: "Dog /d/", lv: 0}, {en: "e", zh: "Egg /ɛ/", lv: 0}, {en: "f", zh: "Fish /f/", lv: 0}, 
+        {en: "g", zh: "Goat /g/", lv: 0}, {en: "h", zh: "Hat /h/", lv: 0}, {en: "i", zh: "Igloo /ɪ/", lv: 0}, 
+        {en: "j", zh: "Jet /dʒ/", lv: 0}, {en: "k", zh: "Kite /k/", lv: 0}, {en: "l", zh: "Lamp /l/", lv: 0}, 
+        {en: "m", zh: "Moon /m/", lv: 0}, {en: "n", zh: "Net /n/", lv: 0}, {en: "o", zh: "Octopus /ɒ/", lv: 0}, 
+        {en: "p", zh: "Pig /p/", lv: 0}, {en: "qu", zh: "Queen /kw/", lv: 0}, {en: "r", zh: "Rat /r/", lv: 0}, 
+        {en: "s", zh: "Sun /s/", lv: 0}, {en: "t", zh: "Tiger /t/", lv: 0}, {en: "u", zh: "Up /ʌ/", lv: 0}, 
+        {en: "v", zh: "Van /v/", lv: 0}, {en: "w", zh: "Wind /w/", lv: 0}, {en: "x", zh: "Box /ks/", lv: 0}, 
+        {en: "y", zh: "Yo-yo /j/", lv: 0}, {en: "z", zh: "Zebra /z/", lv: 0}, {en: "sh", zh: "Ship /ʃ/", lv: 0}, 
+        {en: "ch", zh: "Chair /tʃ/", lv: 0}, {en: "th", zh: "Thin /θ/", lv: 0}, {en: "wh", zh: "Whale /w/", lv: 0},
+
+        // LEVEL 1: 2 Letters
+        {en: "go", zh: "去", lv: 1}, {en: "up", zh: "上", lv: 1}, {en: "in", zh: "在內", lv: 1}, 
+        {en: "me", zh: "我", lv: 1}, {en: "my", zh: "我的", lv: 1}, {en: "no", zh: "不", lv: 1}, 
+        {en: "on", zh: "在上面", lv: 1}, {en: "to", zh: "到", lv: 1}, {en: "is", zh: "是", lv: 1}, 
+        {en: "am", zh: "是", lv: 1}, {en: "it", zh: "它", lv: 1}, {en: "at", zh: "在", lv: 1},
+
+        // LEVEL 2: 3 Letters
+        {en: "cat", zh: "貓", lv: 2}, {en: "dog", zh: "狗", lv: 2}, {en: "sun", zh: "太陽", lv: 2}, 
+        {en: "pig", zh: "豬", lv: 2}, {en: "egg", zh: "雞蛋", lv: 2}, {en: "car", zh: "汽車", lv: 2}, 
+        {en: "bus", zh: "巴士", lv: 2}, {en: "ant", zh: "螞蟻", lv: 2}, {en: "bee", zh: "蜜蜂", lv: 2}, 
+        {en: "box", zh: "盒子", lv: 2}, {en: "sky", zh: "天空", lv: 2}, {en: "boy", zh: "男孩", lv: 2},
+
+        // LEVEL 3: 4 Letters
+        {en: "book", zh: "書", lv: 3}, {en: "fish", zh: "魚", lv: 3}, {en: "tree", zh: "樹", lv: 3}, 
+        {en: "ball", zh: "球", lv: 3}, {en: "duck", zh: "鴨子", lv: 3}, {en: "star", zh: "星星", lv: 3}, 
+        {en: "milk", zh: "牛奶", lv: 3}, {en: "frog", zh: "青蛙", lv: 3}, {en: "bird", zh: "小鳥", lv: 3}, 
+        {en: "moon", zh: "月亮", lv: 3}, {en: "rain", zh: "下雨", lv: 3}, {en: "snow", zh: "下雪", lv: 3}
     ];
 
-    let currentLevel = 1;
+    let currentLevel = 0;
     let filtered = [];
     let currentIdx = 0;
     let score = 0;
@@ -149,6 +196,12 @@
         currentLevel = lv;
         document.querySelectorAll('.level-btns button').forEach(b => b.classList.remove('active'));
         document.getElementById('btn' + lv).classList.add('active');
+        
+        // UI adjustment for Phonics
+        const display = document.getElementById('word-display');
+        if(lv === 0) display.classList.remove('capitalized');
+        else display.classList.add('capitalized');
+        
         filterAndStart();
     }
 
@@ -161,55 +214,60 @@
         if(increaseScore) {
             score++;
             document.getElementById('score').innerText = score;
-            document.body.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 90%)`;
+            document.body.style.backgroundColor = `hsl(${Math.random() * 360}, 60%, 92%)`;
         }
         currentIdx = Math.floor(Math.random() * filtered.length);
-        displayWord(filtered[currentIdx]);
+        updateUI(filtered[currentIdx]);
     }
 
-    function displayWord(wordObj) {
+    function updateUI(wordObj) {
         document.getElementById('word-display').innerText = wordObj.en;
         document.getElementById('translation-display').innerText = wordObj.zh;
     }
 
     function searchWord() {
-        const term = document.getElementById('searchBar').value.toLowerCase();
-        if (term.length < 2) return;
+        const term = document.getElementById('searchBar').value.toLowerCase().trim();
+        if (term.length < 1) return;
         
         const found = allWords.find(w => w.en.toLowerCase() === term);
         if (found) {
-            displayWord(found);
-            window.speechSynthesis.cancel(); // Stop current speech
+            updateUI(found);
+            currentLevel = found.lv; // Sync level with searched word
+            document.querySelectorAll('.level-btns button').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn' + found.lv).classList.add('active');
+            window.speechSynthesis.cancel();
         }
     }
 
-function speak() {
+    function speak() {
         window.speechSynthesis.cancel();
         const word = document.getElementById('word-display').innerText;
         const userSpeed = parseFloat(document.getElementById('rate').value);
 
-        // 1. Spell the word - Forced to be quicker
-        const letters = word.split("").join(", "); 
-        const spellUtterance = new SpeechSynthesisUtterance(letters);
-        spellUtterance.lang = 'en-US';
-        // We set the spelling rate significantly higher than the user speed
-        spellUtterance.rate = Math.min(userSpeed * 1.5, 1.2); 
-        spellUtterance.pitch = 1.0;
-        
-        // 2. Say the full word - Follows the slider speed
-        const wordUtterance = new SpeechSynthesisUtterance(word);
-        wordUtterance.lang = 'en-US';
-        wordUtterance.rate = userSpeed;
-        wordUtterance.pitch = 1.1; 
+        if (currentLevel === 0) {
+            // Level 0: Pure Sound
+            const soundUtterance = new SpeechSynthesisUtterance(word);
+            soundUtterance.lang = 'en-US';
+            soundUtterance.rate = userSpeed;
+            window.speechSynthesis.speak(soundUtterance);
+        } else {
+            // Level 1-3: Fast Spell then Pronounce
+            const letters = word.split("").join(", "); 
+            const spellUtterance = new SpeechSynthesisUtterance(letters);
+            spellUtterance.lang = 'en-US';
+            spellUtterance.rate = Math.min(userSpeed * 1.6, 1.3); // Quick spelling
+            
+            const wordUtterance = new SpeechSynthesisUtterance(word);
+            wordUtterance.lang = 'en-US';
+            wordUtterance.rate = userSpeed;
 
-        // Queue them up
-        window.speechSynthesis.speak(spellUtterance);
-        
-        // Add a tiny delay between spelling and word for clarity
-        window.speechSynthesis.speak(wordUtterance);
+            window.speechSynthesis.speak(spellUtterance);
+            window.speechSynthesis.speak(wordUtterance);
+        }
     }
 
-    filterAndStart();
+    // Initialize the game at Level 0
+    setLevel(0);
 </script>
 
 </body>
