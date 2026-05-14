@@ -183,13 +183,26 @@
         }
     }
 
-    function speak() {
+function speak() {
         window.speechSynthesis.cancel();
-        const text = document.getElementById('word-display').innerText;
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = 'en-US';
-        msg.rate = document.getElementById('rate').value;
-        window.speechSynthesis.speak(msg);
+        const word = document.getElementById('word-display').innerText;
+        const speed = document.getElementById('rate').value;
+
+        // 1. Spell the word (e.g., "C - A - T")
+        const letters = word.split("").join(" . "); 
+        const spellUtterance = new SpeechSynthesisUtterance(letters);
+        spellUtterance.lang = 'en-US';
+        spellUtterance.rate = speed * 0.8; // Make spelling slightly slower than normal
+        
+        // 2. Say the full word (e.g., "Cat")
+        const wordUtterance = new SpeechSynthesisUtterance(word);
+        wordUtterance.lang = 'en-US';
+        wordUtterance.rate = speed;
+        wordUtterance.pitch = 1.1; // Slightly higher pitch for the full word to make it fun
+
+        // Queue them up
+        window.speechSynthesis.speak(spellUtterance);
+        window.speechSynthesis.speak(wordUtterance);
     }
 
     filterAndStart();
