@@ -186,22 +186,26 @@
 function speak() {
         window.speechSynthesis.cancel();
         const word = document.getElementById('word-display').innerText;
-        const speed = document.getElementById('rate').value;
+        const userSpeed = parseFloat(document.getElementById('rate').value);
 
-        // 1. Spell the word (e.g., "C - A - T")
-        const letters = word.split("").join(" . "); 
+        // 1. Spell the word - Forced to be quicker
+        const letters = word.split("").join(", "); 
         const spellUtterance = new SpeechSynthesisUtterance(letters);
         spellUtterance.lang = 'en-US';
-        spellUtterance.rate = speed * 0.8; // Make spelling slightly slower than normal
+        // We set the spelling rate significantly higher than the user speed
+        spellUtterance.rate = Math.min(userSpeed * 1.5, 1.2); 
+        spellUtterance.pitch = 1.0;
         
-        // 2. Say the full word (e.g., "Cat")
+        // 2. Say the full word - Follows the slider speed
         const wordUtterance = new SpeechSynthesisUtterance(word);
         wordUtterance.lang = 'en-US';
-        wordUtterance.rate = speed;
-        wordUtterance.pitch = 1.1; // Slightly higher pitch for the full word to make it fun
+        wordUtterance.rate = userSpeed;
+        wordUtterance.pitch = 1.1; 
 
         // Queue them up
         window.speechSynthesis.speak(spellUtterance);
+        
+        // Add a tiny delay between spelling and word for clarity
         window.speechSynthesis.speak(wordUtterance);
     }
 
