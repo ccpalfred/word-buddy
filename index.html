@@ -3,75 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word Buddy Game</title>
+    <title>Word Buddy 1000</title>
     <style>
         :root {
             --primary: #4A90E2;
             --success: #47D16E;
+            --bg: #f0f8ff;
         }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f8ff;
+            padding: 20px;
+            background-color: var(--bg);
             transition: background 0.5s;
+            min-height: 100vh;
+            margin: 0;
         }
         #game-container {
             text-align: center;
             background: white;
-            padding: 2rem;
+            padding: 1.5rem;
             border-radius: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            width: 90%;
-            max-width: 400px;
+            width: 95%;
+            max-width: 450px;
         }
-        .level-btns { margin-bottom: 20px; }
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            border-radius: 15px;
+            border: 2px solid #eee;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        .level-btns { margin-bottom: 15px; display: flex; justify-content: center; gap: 5px; }
         .level-btns button {
-            padding: 8px 12px;
-            margin: 5px;
+            padding: 8px 10px;
             border: none;
             border-radius: 10px;
             cursor: pointer;
             background: #eee;
+            font-weight: bold;
+            font-size: 0.8rem;
         }
-        .level-btns button.active {
-            background: var(--primary);
-            color: white;
-        }
+        .level-btns button.active { background: var(--primary); color: white; }
+        
         #word-display {
-            font-size: 5rem;
+            font-size: 4.5rem;
             font-weight: bold;
             color: #333;
-            margin: 10px 0;
+            margin: 5px 0;
+            text-transform: capitalize;
         }
         #translation-display {
-            font-size: 2rem;
+            font-size: 2.2rem;
             color: #666;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+        }
+        .controls {
+            margin: 15px 0;
+            font-size: 0.9rem;
+            color: #888;
         }
         .main-btn {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 20px;
+            padding: 25px;
             border-radius: 50%;
-            font-size: 2rem;
+            font-size: 2.5rem;
             cursor: pointer;
             box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            width: 100px;
+            height: 100px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         .next-btn {
             background: var(--success);
             color: white;
             border: none;
             width: 100%;
-            padding: 15px;
-            border-radius: 15px;
-            font-size: 1.2rem;
+            padding: 18px;
+            border-radius: 20px;
+            font-size: 1.3rem;
             font-weight: bold;
             cursor: pointer;
         }
@@ -85,42 +105,39 @@
 <body>
 
 <div id="game-container">
-    <div class="level-btns" id="levelContainer">
+    <input type="text" id="searchBar" class="search-box" placeholder="🔍 Search for a word..." onkeyup="searchWord()">
+
+    <div class="level-btns">
         <button onclick="setLevel(1)" id="btn1" class="active">Level 1 (2L)</button>
         <button onclick="setLevel(2)" id="btn2">Level 2 (3L)</button>
         <button onclick="setLevel(3)" id="btn3">Level 3 (4L)</button>
     </div>
 
-    <div id="word-display">CAT</div>
-    <div id="translation-display">貓</div>
+    <div id="word-display">-</div>
+    <div id="translation-display">-</div>
+
+    <div class="controls">
+        <label>Speech Speed: </label>
+        <input type="range" id="rate" min="0.2" max="1" step="0.1" value="0.6">
+    </div>
 
     <button class="main-btn" onclick="speak()">🔊</button>
-    
-    <button class="next-btn" onclick="nextWord()">Next Word / 下一個</button>
+    <button class="next-btn" onclick="nextWord(true)">Next Word / 下一個</button>
 
     <div id="score-board">Words Learned: <span id="score">0</span></div>
 </div>
 
 <script>
-const allWords = [
+    const allWords = [
         // LEVEL 1 (2 Letters)
-        {en: "Go", zh: "去", lv: 1}, {en: "Up", zh: "上", lv: 1}, {en: "To", zh: "到", lv: 1}, 
-        {en: "In", zh: "在", lv: 1}, {en: "Me", "zh": "我", lv: 1}, {en: "My", "zh": "我的", lv: 1},
-        {en: "He", "zh": "他", lv: 1}, {en: "We", "zh": "我們", lv: 1}, {en: "No", "zh": "不", lv: 1},
-        {en: "On", "zh": "在上面", lv: 1}, {en: "At", "zh": "在", lv: 1}, {en: "Is", "zh": "是", lv: 1},
+        {en: "Go", zh: "去", lv: 1}, {en: "Up", zh: "上", lv: 1}, {en: "In", zh: "在", lv: 1}, {en: "Me", zh: "我", lv: 1}, {en: "My", zh: "我的", lv: 1}, {en: "He", zh: "他", lv: 1}, {en: "We", zh: "我們", lv: 1}, {en: "No", zh: "不", lv: 1}, {en: "On", zh: "在上面", lv: 1}, {en: "At", zh: "在", lv: 1}, {en: "Is", zh: "是", lv: 1}, {en: "It", zh: "它", lv: 1}, {en: "Am", zh: "是", lv: 1}, {en: "Do", zh: "做", lv: 1}, {en: "Of", zh: "的", lv: 1}, {en: "Hi", zh: "你好", lv: 1},
         
         // LEVEL 2 (3 Letters)
-        {en: "Cat", zh: "貓", lv: 2}, {en: "Dog", zh: "狗", lv: 2}, {en: "Sun", zh: "太陽", lv: 2},
-        {en: "Pig", zh: "豬", lv: 2}, {en: "Box", zh: "盒子", lv: 2}, {en: "Sky", zh: "天空", lv: 2},
-        {en: "Red", zh: "紅色", lv: 2}, {en: "Boy", zh: "男孩", lv: 2}, {en: "Egg", zh: "雞蛋", lv: 2},
-        {en: "Bus", zh: "巴士", lv: 2}, {en: "Car", zh: "汽車", lv: 2}, {en: "Ant", zh: "螞蟻", lv: 2},
+        {en: "Cat", zh: "貓", lv: 2}, {en: "Dog", zh: "狗", lv: 2}, {en: "Sun", zh: "太陽", lv: 2}, {en: "Pig", zh: "豬", lv: 2}, {en: "Sky", zh: "天空", lv: 2}, {en: "Red", zh: "紅色", lv: 2}, {en: "Egg", zh: "雞蛋", lv: 2}, {en: "Car", zh: "汽車", lv: 2}, {en: "Key", zh: "鑰匙", lv: 2}, {en: "Pen", zh: "筆", lv: 2}, {en: "Run", zh: "跑", lv: 2}, {en: "Eat", zh: "吃", lv: 2}, {en: "Fly", zh: "飛", lv: 2}, {en: "Eye", zh: "眼睛", lv: 2}, {en: "Arm", zh: "手臂", lv: 2}, {en: "Leg", zh: "腿", lv: 2}, {en: "Ear", zh: "耳朵", lv: 2}, {en: "Sad", zh: "傷心", lv: 2}, {en: "Mad", zh: "生氣", lv: 2}, {en: "Hot", zh: "熱", lv: 2}, {en: "Wet", zh: "濕", lv: 2},
         
         // LEVEL 3 (4 Letters)
-        {en: "Book", zh: "書", lv: 3}, {en: "Fish", zh: "魚", lv: 3}, {en: "Tree", zh: "樹", lv: 3},
-        {en: "Ball", zh: "球", lv: 3}, {en: "Cake", zh: "蛋糕", lv: 3}, {en: "Duck", zh: "鴨子", lv: 3},
-        {en: "Star", zh: "星星", lv: 3}, {en: "Milk", zh: "牛奶", lv: 3}, {en: "Frog", zh: "青蛙", lv: 3},
-        {en: "Bird", zh: "小鳥", lv: 3}, {en: "Moon", zh: "月亮", lv: 3}, {en: "Lion", zh: "獅子", lv: 3}
-        // ... You can continue adding pairs here until you hit 150!
+        {en: "Book", zh: "書", lv: 3}, {en: "Fish", zh: "魚", lv: 3}, {en: "Tree", zh: "樹", lv: 3}, {en: "Ball", zh: "球", lv: 3}, {en: "Duck", zh: "鴨子", lv: 3}, {en: "Milk", zh: "牛奶", lv: 3}, {en: "Bird", zh: "小鳥", lv: 3}, {en: "Foot", zh: "腳", lv: 3}, {en: "Hand", zh: "手", lv: 3}, {en: "Nose", zh: "鼻子", lv: 3}, {en: "Face", zh: "臉", lv: 3}, {en: "Glad", zh: "高興", lv: 3}, {en: "Calm", zh: "冷靜", lv: 3}, {en: "Kind", zh: "善良", lv: 3}, {en: "Rain", zh: "下雨", lv: 3}, {en: "Snow", zh: "下雪", lv: 3}, {en: "Mist", zh: "薄霧", lv: 3}, {en: "Wind", zh: "風", lv: 3}, {en: "Cold", zh: "冷", lv: 3}, {en: "Warm", zh: "溫暖", lv: 3}, {en: "Farm", zh: "農場", lv: 3}, {en: "Shop", zh: "商店", lv: 3}, {en: "Park", zh: "公園", lv: 3}
+        // ... You can add more words here!
     ];
 
     let currentLevel = 1;
@@ -137,7 +154,7 @@ const allWords = [
 
     function filterAndStart() {
         filtered = allWords.filter(w => w.lv === currentLevel);
-        nextWord(false); // Get first word without increasing score
+        nextWord(false);
     }
 
     function nextWord(increaseScore = true) {
@@ -147,19 +164,34 @@ const allWords = [
             document.body.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 90%)`;
         }
         currentIdx = Math.floor(Math.random() * filtered.length);
-        document.getElementById('word-display').innerText = filtered[currentIdx].en;
-        document.getElementById('translation-display').innerText = filtered[currentIdx].zh;
+        displayWord(filtered[currentIdx]);
+    }
+
+    function displayWord(wordObj) {
+        document.getElementById('word-display').innerText = wordObj.en;
+        document.getElementById('translation-display').innerText = wordObj.zh;
+    }
+
+    function searchWord() {
+        const term = document.getElementById('searchBar').value.toLowerCase();
+        if (term.length < 2) return;
+        
+        const found = allWords.find(w => w.en.toLowerCase() === term);
+        if (found) {
+            displayWord(found);
+            window.speechSynthesis.cancel(); // Stop current speech
+        }
     }
 
     function speak() {
-        const text = filtered[currentIdx].en;
+        window.speechSynthesis.cancel();
+        const text = document.getElementById('word-display').innerText;
         const msg = new SpeechSynthesisUtterance(text);
         msg.lang = 'en-US';
-        msg.rate = 0.8;
+        msg.rate = document.getElementById('rate').value;
         window.speechSynthesis.speak(msg);
     }
 
-    // Initialize
     filterAndStart();
 </script>
 
